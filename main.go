@@ -1,33 +1,22 @@
 package main
-
+// MAIN.go
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
+	"my-brain/lib"
 )
 
-type TokenList map[string]float64
-
-type Doc struct {
-	Content string    `json:"content"`
-	Heading string    `json:"heading"`
-	Id      string    `json:"id"`
-	Path    string    `json:"path"`
-	Tokens  TokenList `json:"tokens"`
-}
-
-var Indexes map[string]Doc
+var Indexes map[string]lib.Doc
 
 //Starts server
 // place all routes here
 func handleRequests() {
 	// creates a new instance of a mux router
 	myRouter := mux.NewRouter().StrictSlash(true)
-
+	fmt.Println(lib.MarkdownTitle("./indexes.json"))
 	// routes
 	myRouter.HandleFunc("/", homePage)
 	myRouter.HandleFunc("/all", returnAllIndexes)
@@ -51,19 +40,7 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func unMarshalIndexFile(filePath string) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		fmt.Println("couldnt read index file")
-		fmt.Println(err)
-	}
-	fmt.Println("success")
-
-	defer file.Close()
-	byteVal, err := ioutil.ReadAll(file)
-	if err != nil {
-		fmt.Println(err)
-	}
-
+	byteVal := lib.ReadFile(filePath)
 	unmarshalErr := json.Unmarshal(byteVal, &Indexes)
 	if unmarshalErr != nil {
 		fmt.Printf("%+v\n", unmarshalErr)
