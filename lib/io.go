@@ -26,6 +26,18 @@ func Write(path string, content *string) {
 	fmt.Print(b)
 }
 
+func Append(path string, content *string) {
+	f, err := os.OpenFile("access.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Print("error: Couldnt Open ", path, " because: %v", err)
+	}
+	defer f.Close()
+	if _, err := f.WriteString(*content); err != nil {
+		fmt.Println("error: Couldnt write to ", path, "  because:", err)
+	}
+
+}
+
 func ReadFile(filePath string) []byte {
 	file, err := os.Open(filePath)
 	if err != nil {
