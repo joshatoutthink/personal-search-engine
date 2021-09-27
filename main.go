@@ -8,6 +8,9 @@ import (
 	"log"
 	"my-brain/lib"
 	"net/http"
+	"regexp"
+	"sort"
+	"strings"
 )
 
 var Indexes map[string]lib.Doc
@@ -65,11 +68,88 @@ func reIndexMods(w http.ResponseWriter, r *http.Request) {
 }
 
 func searchIndexes(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
 
+	splitString := regexp.MustCompile("[^\\s]+").FindAllString(query, -1)
+	var docListScores = make(map[string]float64)
+
+	for _, peice := range splitString {
+		mixCaseWord := lib.AlphaNumeric.ReplaceAllString(peice, "")
+		word := strings.ToLower(mixCaseWord)
+
+		//Do we really need to look through all the
+		//indexes every single time ??
+		for id, doc := range Indexes {
+
+			_, ok := docListScores[id]
+			if !ok {
+				docListScores[id] = float64(0)
+			}
+
+			timesInDoc := float64(0)
+			_, ok = doc.Tokens[word]
+			if ok {
+				timesInDoc = doc.Tokens[word]
+			}
+
+			docListScores[id] += timesInDoc
+			if len(doc.Heading) > 1 {
+				if strings.Contains(strings.ToLower(doc.Heading), word) == true {
+					docListScores[id] += float64(5)
+				}
+			}
+
+		}
+	}
+
+	//Sort the scores
+	docListScoresArr := mapToArray(docListScores)
+	sort.Sort(byDocListScore(docListScoresArr))
+
+	sortedDocList := make([]lib.Doc, 0)
+	for _, scoreDoc := range docListScoresArr {
+		if scoreDoc.score > float64(0) {
+			fmt.Println(scoreDoc.score)
+			sortedDocList = append(sortedDocList, Indexes[scoreDoc.id])
+		}
+	}
+
+	for _, doc := range sortedDocList {
+		fmt.Fprintf(w, "Score: %d \nPath: %s \n\n", int64(docListScores[doc.Id]), doc.Path)
+	}
+	fmt.Println(docListScoresArr)
+}
+
+type DocListScore struct {
+	id    string
+	score float64
+}
+
+func mapToArray(m map[string]float64) []DocListScore {
+	var Arr []DocListScore
+	for id, score := range m {
+		Arr = append(Arr, DocListScore{id, score})
+	}
+	return Arr
+}
+
+//Some Go Sorting Magic
+type byDocListScore []DocListScore
+
+func (s byDocListScore) Len() int {
+	return len(s)
+}
+func (s byDocListScore) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+func (s byDocListScore) Less(i, j int) bool {
+	docI := s[i]
+	docJ := s[j]
+	return docI.score < docJ.score
 }
 
 func returnAllIndexes(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Endpoint Hit: returnAllIndexes")
+	fmt.Println("endpoint hit: returnallindexes")
 	b, err := json.MarshalIndent(&Indexes, "", "  ")
 	if err != nil {
 		fmt.Println(err)
