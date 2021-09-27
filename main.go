@@ -40,6 +40,9 @@ func reIndexMods(w http.ResponseWriter, r *http.Request) {
 		fpaths := lib.PathsFromDir(mod)
 
 		for indx, fpath := range fpaths {
+
+			//ignore files
+
 			id := modIndx + indx
 			content := string(lib.ReadFile(fpath))
 
@@ -94,7 +97,7 @@ func searchIndexes(w http.ResponseWriter, r *http.Request) {
 
 			docListScores[id] += timesInDoc
 			if len(doc.Heading) > 1 {
-				if strings.Contains(strings.ToLower(doc.Heading), word) == true {
+				if strings.Contains(strings.ToLower(doc.Heading), word) && !lib.StringInArr(lib.StopWords, word) {
 					docListScores[id] += float64(5)
 				}
 			}
@@ -109,15 +112,16 @@ func searchIndexes(w http.ResponseWriter, r *http.Request) {
 	sortedDocList := make([]lib.Doc, 0)
 	for _, scoreDoc := range docListScoresArr {
 		if scoreDoc.score > float64(0) {
-			fmt.Println(scoreDoc.score)
 			sortedDocList = append(sortedDocList, Indexes[scoreDoc.id])
 		}
 	}
 
-	for _, doc := range sortedDocList {
-		fmt.Fprintf(w, "Score: %d \nPath: %s \n\n", int64(docListScores[doc.Id]), doc.Path)
+	_, err := json.MarshalIndent(&sortedDocList, "", "  ")
+	if err != nil {
+		fmt.Println(err)
 	}
-	fmt.Println(docListScoresArr)
+	json.NewEncoder(w).Encode(sortedDocList)
+
 }
 
 type DocListScore struct {
@@ -145,7 +149,7 @@ func (s byDocListScore) Swap(i, j int) {
 func (s byDocListScore) Less(i, j int) bool {
 	docI := s[i]
 	docJ := s[j]
-	return docI.score < docJ.score
+	return docI.score > docJ.score
 }
 
 func returnAllIndexes(w http.ResponseWriter, r *http.Request) {

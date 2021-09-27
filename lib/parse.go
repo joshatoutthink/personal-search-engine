@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strings"
 	//"bytes"
+	"fmt"
 )
 
 var (
@@ -11,7 +12,7 @@ var (
 	MdTitle      = regexp.MustCompile("^title:")
 	AlphaNumeric = regexp.MustCompile("[^A-Za-z0-9]")
 
-	stopWords = []string{"a"}
+	StopWords = []string{"a", "the", "it", "has", "of", "then", "to", "and", "an", "or", "at", "in"}
 )
 
 func MarkdownTitle(path string) string {
@@ -32,12 +33,18 @@ func Tokenize(content string) TokenList {
 	splitString := regexp.MustCompile("[^\\s]+").FindAllString(content, -1)
 	words := make(TokenList)
 
+wordLoop:
 	for _, piece := range splitString {
+
 		mixCaseWord := AlphaNumeric.ReplaceAllString(piece, "")
 		word := strings.ToLower(mixCaseWord)
-		for _, stopWord := range stopWords {
-			if word == stopWord {
-				continue
+		for _, stopWord := range StopWords {
+
+			if stopWord == word {
+
+				fmt.Println(stopWord, word)
+				continue wordLoop
+
 			}
 		}
 
