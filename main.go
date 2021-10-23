@@ -6,19 +6,19 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"log"
+	"my-brain/contentType"
 	"my-brain/lib"
 	"net/http"
 )
 
 var Indexes map[string]lib.Doc
-var Mods []string
+var Modules contentType.ModuleCollection
 
 //Starts server
 // place all routes here
 func handleRequests() {
 	// creates a new instance of a mux router
 	// todo replace with module loader and module system
-	Mods = append(Mods, "/Users/joshkennedy00/sites/joshs/sandbox/content/brain/")
 
 	myRouter := mux.NewRouter().StrictSlash(true)
 

@@ -8,27 +8,24 @@ import (
 )
 
 func ReIndexMods(w http.ResponseWriter, r *http.Request) {
+
+	Modules.AddModules()
+
 	Indexes = make(map[string]lib.Doc)
 	//Mods should be the list of Modules in
-	for modIndx, mod := range Mods {
+	fmt.Println(len(Modules.Mods))
+	for modName, mod := range Modules.Mods {
 		//MODULE SHOULD IMPLEMENT LINES BELOW
-		fpaths := lib.PathsFromDir(mod) //TODO: will be mod.CollectLocations
-
+		fpaths, err := mod.CollectLocations()
+		if err != nil {
+			fmt.Println(err)
+		}
 		for indx, fpath := range fpaths {
 			// TODO get content mod.GetContent (this is just what ever is at the location given)
-			id := modIndx + indx                   //module specific
-			content := string(lib.ReadFile(fpath)) //module.specific
+			id := fmt.Sprintf("%s-%d", modName, indx)
 
-			//TODO mod.TokenizeDoc
-			doc := lib.Doc{
-				Tokens:  lib.Tokenize(content),
-				Content: content,
-				Heading: lib.MarkdownTitle(fpath),
-				Path:    fpath,
-				Id:      fmt.Sprint(id),
-			}
-
-			Indexes[fmt.Sprint(id)] = doc
+			doc := mod.TokenizeDoc(id, fpath)
+			Indexes[id] = doc
 		}
 
 		//END MODULE SPECIFIC

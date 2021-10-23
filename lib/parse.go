@@ -30,7 +30,7 @@ func MarkdownTitle(path string) string {
 }
 
 func Tokenize(content string) TokenList {
-	splitString := regexp.MustCompile(`[^\\s]+`).FindAllString(content, -1)
+	splitString := regexp.MustCompile(`[^\s]+`).FindAllString(content, -1)
 	words := make(TokenList)
 
 wordLoop:
