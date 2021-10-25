@@ -4,6 +4,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"log"
 	"my-brain/contentType"
@@ -22,13 +23,15 @@ func handleRequests() {
 
 	myRouter := mux.NewRouter().StrictSlash(true)
 
-	// routes
-	myRouter.HandleFunc("/", homePage)
+	// routeshttp.Handle("/", http.FileServer(http.Dir("./static")))
+	myRouter.Handle("/", http.FileServer(http.Dir("./client/build")))
 	myRouter.HandleFunc("/all", returnAllIndexes)
 	myRouter.HandleFunc("/reindex", ReIndexMods)
 	myRouter.HandleFunc("/search", SearchIndexes)
 
-	log.Fatal(http.ListenAndServe(":10000", myRouter))
+	originsOk := handlers.AllowedOrigins([]string{"*"})
+
+	log.Fatal(http.ListenAndServe(":10000", handlers.CORS(originsOk)(myRouter)))
 }
 
 type DocListScore struct {

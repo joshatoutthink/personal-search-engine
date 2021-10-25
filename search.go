@@ -10,6 +10,10 @@ import (
 	"strings"
 )
 
+type ResultType struct {
+	Data []lib.Doc `json:"data"`
+}
+
 func SearchIndexes(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
 
@@ -58,11 +62,14 @@ func SearchIndexes(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_, err := json.MarshalIndent(&sortedDocList, "", "  ")
+	results := ResultType{
+		Data: sortedDocList,
+	}
+	_, err := json.MarshalIndent(&results, "", "  ")
 	if err != nil {
 		fmt.Println(err)
 	}
-	json.NewEncoder(w).Encode(sortedDocList)
+	json.NewEncoder(w).Encode(results)
 
 }
 

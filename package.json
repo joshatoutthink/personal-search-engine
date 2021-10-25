@@ -1,0 +1,7 @@
+{
+  "name": "my-brain",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Joshua Kennedy <josh@outthinkgroup.com>",
+  "license": "MIT"
+}

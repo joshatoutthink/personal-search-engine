@@ -1,0 +1,16 @@
+body {
+  background-color: #282c34;
+  color: white;
+  box-sizing: border-box;
+}
+
+body * {
+  box-sizing: inherit;
+}
+
+a {
+  color: #61dafb;
+}
+
+.App {
+}
