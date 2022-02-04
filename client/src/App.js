@@ -13,9 +13,10 @@ function App() {
   }
   async function fetchResults(e) {
     e.preventDefault();
-    // const res = await fetch(`${baseURL}/search?q=${searchInput}`, {
     const { data } = await fetch(
-      `http://localhost:10000/search?q=wordpress shortcode`
+      `${baseURL}/search?q=${searchInput}`
+      // const { data } = await fetch(
+      // `http://localhost:10000/search?q=wordpress shortcode`
     ).then((res) => res.json());
     console.log(data);
     setResults(data);
